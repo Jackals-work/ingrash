@@ -1,0 +1,3144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مدير الكروت</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
+    </script>
+    <style>
+        /* ====== RESET & BASE ====== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Tahoma', system-ui, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #f0f4f8;
+            color: #1a202c;
+            transition: 0.3s;
+            font-size: 14px;
+            padding-bottom: 70px;
+        }
+
+        body.dark {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        /* ====== HEADER ====== */
+        .header {
+            background: white;
+            padding: 10px 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        body.dark .header {
+            background: #1e293b;
+            border-bottom-color: #334155;
+        }
+
+        .header h1 {
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header h1 i {
+            color: #2563eb;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 11px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            min-height: 30px;
+        }
+
+        .btn i {
+            font-size: 12px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #15803d;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #e2e8f0;
+        }
+
+        body.dark .btn-outline {
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .btn-outline:hover {
+            background: #f7fafc;
+        }
+
+        body.dark .btn-outline:hover {
+            background: #334155;
+        }
+
+        /* ====== MAIN CONTENT ====== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 10px 10px 16px;
+        }
+
+        /* ====== BOTTOM NAVIGATION ====== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 6px 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        body.dark .bottom-nav {
+            background: #1e293b;
+            border-top-color: #334155;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 4px 12px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            min-width: 60px;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            transition: 0.2s;
+        }
+
+        .nav-item.active {
+            color: #2563eb;
+        }
+
+        .nav-item.active i {
+            transform: scale(1.1);
+        }
+
+        body.dark .nav-item {
+            color: #64748b;
+        }
+
+        body.dark .nav-item.active {
+            color: #60a5fa;
+        }
+
+        .nav-item .badge-nav {
+            position: absolute;
+            top: 0;
+            right: 4px;
+            background: #ef4444;
+            color: white;
+            font-size: 9px;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* ====== PAGES ====== */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ====== STATS PAGE ====== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        @media (min-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        @media (min-width: 900px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+            }
+        }
+
+        .stat-card {
+            background: white;
+            padding: 14px 12px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            transition: 0.2s;
+        }
+
+        body.dark .stat-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .stat-card .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .stat-card .stat-title {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        body.dark .stat-card .stat-title {
+            color: #94a3b8;
+        }
+
+        .stat-card .stat-icon {
+            font-size: 18px;
+            color: #2563eb;
+        }
+
+        .stat-card .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 4px 0;
+        }
+
+        .stat-card .stat-detail {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        body.dark .stat-card .stat-detail {
+            color: #94a3b8;
+        }
+
+        .stat-card .stat-detail span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-card .stat-detail .used-dot {
+            color: #ef4444;
+        }
+        .stat-card .stat-detail .unused-dot {
+            color: #22c55e;
+        }
+
+        /* ====== OWNER SECTIONS ====== */
+        .owner-section {
+            margin-bottom: 16px;
+        }
+
+        .owner-section .owner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        body.dark .owner-section .owner-header {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .owner-section .owner-header:hover {
+            background: #f7fafc;
+        }
+
+        body.dark .owner-section .owner-header:hover {
+            background: #2d3a4f;
+        }
+
+        .owner-section .owner-name {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .owner-section .owner-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        body.dark .owner-section .owner-stats {
+            color: #94a3b8;
+        }
+
+        .owner-section .owner-stats .used {
+            color: #ef4444;
+        }
+        .owner-section .owner-stats .unused {
+            color: #22c55e;
+        }
+
+        .owner-section .type-list {
+            padding-right: 16px;
+            display: none;
+        }
+
+        .owner-section.open .type-list {
+            display: block;
+        }
+
+        .type-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            border-right: 3px solid #2563eb;
+        }
+
+        body.dark .type-item {
+            background: #0f172a;
+        }
+
+        .type-item .type-name {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .type-item .type-stats {
+            display: flex;
+            gap: 10px;
+            font-size: 11px;
+        }
+
+        .type-item .type-stats .used {
+            color: #ef4444;
+        }
+        .type-item .type-stats .unused {
+            color: #22c55e;
+        }
+
+        /* ====== TABLE PAGE ====== */
+        .toolbar {
+            background: white;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        body.dark .toolbar {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 120px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 6px 12px 6px 30px;
+            border-radius: 30px;
+            border: 1px solid #e2e8f0;
+            background: #f7fafc;
+            font-size: 12px;
+        }
+
+        body.dark .search-box input {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px #2563eb30;
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+            font-size: 12px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .filter-group select {
+            padding: 5px 8px;
+            border-radius: 30px;
+            border: 1px solid #e2e8f0;
+            background: #f7fafc;
+            font-size: 11px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 50px;
+        }
+
+        body.dark .filter-group select {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .actions-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .actions-bar .btn {
+            flex: 1;
+            min-width: 50px;
+            justify-content: center;
+            font-size: 10px;
+            padding: 5px 8px;
+            min-height: 28px;
+        }
+
+        @media (min-width: 480px) {
+            .actions-bar .btn {
+                flex: none;
+                padding: 5px 14px;
+                font-size: 16px;
+                min-height: 30px;
+            }
+        }
+
+        .table-wrap {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        body.dark .table-wrap {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .table-scroll {
+            max-height: 480px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            min-width: 700px;
+        }
+
+        @media (max-width: 480px) {
+            table {
+                font-size: 16px;
+                min-width: 900px;
+            }
+        }
+
+        th {
+            padding: 8px 6px;
+            text-align: right;
+            background: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            white-space: nowrap;
+            font-size: 10px;
+        }
+
+        body.dark th {
+            background: #0f172a;
+            color: #cbd5e1;
+            border-bottom-color: #334155;
+        }
+
+        td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+            word-break: break-word;
+        }
+
+        body.dark td {
+            border-bottom-color: #334155;
+        }
+
+        tr.used {
+            background: #fee9e7 !important;
+        }
+
+        body.dark tr.used {
+            background: #3b1f1f !important;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        body.dark tr:hover {
+            background: #2d3a4f;
+        }
+
+        .badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 1px 8px;
+            border-radius: 30px;
+            font-size: 9px;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        body.dark .badge {
+            background: #1e3a5f;
+            color: #93c5fd;
+        }
+
+        .badge-owner {
+            background: #ede9fe;
+            color: #7c3aed;
+            padding: 1px 8px;
+            border-radius: 30px;
+            font-size: 9px;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        body.dark .badge-owner {
+            background: #2d1b69;
+            color: #a78bfa;
+        }
+
+        .badge-duplicate {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 1px 8px;
+            border-radius: 30px;
+            font-size: 9px;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        body.dark .badge-duplicate {
+            background: #3b2d1f;
+            color: #fbbf24;
+        }
+
+        .actions {
+            display: flex;
+            gap: 2px;
+            flex-wrap: nowrap;
+        }
+
+        .actions i {
+            padding: 4px 5px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #4a5568;
+            font-size: 12px;
+        }
+
+        .actions i:active {
+            transform: scale(0.85);
+        }
+
+        .actions i:hover {
+            background: #e2e8f0;
+        }
+
+        body.dark .actions i {
+            color: #94a3b8;
+        }
+
+        body.dark .actions i:hover {
+            background: #334155;
+        }
+
+        .actions i.fa-copy {
+            color: #2563eb;
+        }
+        .actions i.fa-share-alt {
+            color: #16a34a;
+        }
+        .actions i.fa-edit {
+            color: #f59e0b;
+        }
+        .actions i.fa-trash {
+            color: #dc2626;
+        }
+
+        @media (max-width: 480px) {
+            th {
+                padding: 15px 13px;
+                font-size: 16px;
+            }
+            td {
+                padding: 15px 13px;
+                font-size: 16px;
+            }
+            .actions i {
+                font-size: 16px;
+                padding: 13px 14px;
+            }
+            .badge,
+            .badge-owner,
+            .badge-duplicate {
+                font-size: 16px;
+                padding: 13px 16px;
+            }
+        }
+
+        /* ====== MODAL ====== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            animation: fadeIn 0.2s;
+            padding: 10px;
+        }
+
+        .modal {
+            background: white;
+            max-width: 520px;
+            width: 100%;
+            max-height: 92vh;
+            overflow-y: auto;
+            border-radius: 18px;
+            padding: 18px 16px;
+            animation: slideUp 0.25s;
+        }
+
+        body.dark .modal {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .modal h2 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            font-size: 17px;
+        }
+
+        .modal .close {
+            font-size: 16px;
+            cursor: pointer;
+            color: #a0aec0;
+            padding: 4px 6px;
+        }
+
+        .modal .close:hover {
+            color: #1a202c;
+        }
+
+        body.dark .modal .close:hover {
+            color: #f1f5f9;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 3px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #f7fafc;
+            font-size: 13px;
+            -webkit-appearance: none;
+        }
+
+        body.dark .form-group input,
+        body.dark .form-group select,
+        body.dark .form-group textarea {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px #2563eb30;
+        }
+
+        .form-group .hint {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        body.dark .form-group .hint {
+            color: #94a3b8;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .form-row .form-group:first-child {
+            flex: 2;
+        }
+
+        @media (max-width: 480px) {
+            .form-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .form-row .form-group {
+                width: 100%;
+            }
+        }
+
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 14px;
+            padding: 20px 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            margin: 8px 0;
+        }
+
+        .drop-zone.dragover {
+            border-color: #2563eb;
+            background: #2563eb10;
+        }
+
+        body.dark .drop-zone {
+            border-color: #475569;
+        }
+
+        .drop-zone i {
+            font-size: 26px;
+            color: #2563eb;
+        }
+
+        .drop-zone p {
+            font-size: 12px;
+            margin: 4px 0;
+        }
+
+        .progress-wrap {
+            margin: 12px 0;
+        }
+
+        .progress-bar {
+            height: 5px;
+            background: #e2e8f0;
+            border-radius: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            background: #2563eb;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-top: 3px;
+            color: #718096;
+        }
+
+        body.dark .progress-info {
+            color: #94a3b8;
+        }
+
+        .report {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 10px;
+            display: none;
+        }
+
+        body.dark .report {
+            background: #0f172a;
+        }
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            font-size: 12px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a202c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            animation: slideUp 0.3s;
+            font-size: 13px;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        body.dark .toast {
+            background: #0f172a;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 11px;
+            color: #718096;
+            padding: 0 4px;
+        }
+
+        body.dark .footer-info {
+            color: #94a3b8;
+        }
+
+        /* ====== DROPDOWN ====== */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background: white;
+            min-width: 180px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            z-index: 1000;
+            padding: 6px 0;
+            margin-top: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        body.dark .dropdown-content {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .dropdown-content button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            width: 100%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 13px;
+            color: #1a202c;
+            transition: 0.2s;
+            text-align: right;
+        }
+
+        body.dark .dropdown-content button {
+            color: #e2e8f0;
+        }
+
+        .dropdown-content button:hover {
+            background: #f7fafc;
+        }
+
+        body.dark .dropdown-content button:hover {
+            background: #334155;
+        }
+
+        .dropdown-content button i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .dropdown-content button.danger {
+            color: #dc2626;
+        }
+
+        .dropdown-content button.danger:hover {
+            background: #fee2e2;
+        }
+
+        body.dark .dropdown-content button.danger {
+            color: #f87171;
+        }
+
+        body.dark .dropdown-content button.danger:hover {
+            background: #3b1f1f;
+        }
+
+        .dropdown.show .dropdown-content {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 6px 4px 12px;
+            }
+            .modal {
+                padding: 14px 12px;
+                border-radius: 14px;
+            }
+            .modal h2 {
+                font-size: 15px;
+            }
+            .btn {
+                font-size: 10px;
+                padding: 4px 10px;
+                min-height: 26px;
+            }
+            .btn i {
+                font-size: 11px;
+            }
+            .toolbar {
+                padding: 6px 8px;
+                gap: 4px;
+            }
+            .search-box input {
+                font-size: 11px;
+                padding: 5px 10px 5px 26px;
+            }
+            .filter-group select {
+                font-size: 10px;
+                padding: 4px 6px;
+            }
+            .actions-bar .btn {
+                font-size: 9px;
+                padding: 4px 6px;
+                min-height: 24px;
+            }
+            .drop-zone {
+                padding: 14px 10px;
+            }
+            .drop-zone i {
+                font-size: 22px;
+            }
+            .drop-zone p {
+                font-size: 11px;
+            }
+            .bottom-nav {
+                padding: 4px 0;
+            }
+            .nav-item {
+                padding: 2px 8px;
+                font-size: 9px;
+                min-width: 50px;
+            }
+            .nav-item i {
+                font-size: 18px;
+            }
+            .stats-grid {
+                gap: 6px;
+            }
+            .stat-card {
+                padding: 10px 8px;
+            }
+            .stat-card .stat-number {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .stat-card .stat-number {
+                font-size: 18px;
+            }
+            .stats-grid {
+                gap: 4px;
+            }
+        }
+
+        /* ====== ABOUT STYLES ====== */
+        .about-header {
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .about-icon {
+            font-size: 48px;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+
+        .about-version {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        body.dark .about-version {
+            background: #1e3a5f;
+            color: #93c5fd;
+        }
+
+        .about-features {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        body.dark .about-features {
+            background: #0f172a;
+        }
+
+        .about-features h4 {
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #1a202c;
+        }
+
+        body.dark .about-features h4 {
+            color: #e2e8f0;
+        }
+
+        .about-features ul {
+            list-style: none;
+            padding: 0;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        body.dark .about-features ul {
+            color: #94a3b8;
+        }
+
+        .about-features ul li {
+            padding: 3px 0;
+        }
+
+        .about-features ul li::before {
+            content: "✓ ";
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .about-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .about-buttons .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 8px;
+            font-size: 12px;
+            min-width: 80px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ====== HEADER ====== -->
+    <header class="header">
+        <h1><i class="fas fa-book"></i>مدير الكروت</h1>
+        <div class="header-actions">
+            <div class="dropdown" id="moreDropdown">
+                <button class="btn btn-outline" id="moreBtn" style="padding:4px 10px;min-height:28px;">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="dropdown-content">
+                    <button id="aboutBtn"><i class="fas fa-info-circle"></i> حول التطبيق</button>
+                    <button id="importFileBtn"><i class="fas fa-file-import"></i> استيراد ملف</button>
+                    <button id="clearCopiedBtn"><i class="fas fa-copy"></i> مسح المنسوخة</button>
+                    <button id="clearSharedBtn"><i class="fas fa-share-alt"></i> مسح المشاركة</button>
+                    <button id="clearAllBtn" class="danger"><i class="fas fa-trash"></i> مسح الكل</button>
+                </div>
+            </div>
+            <button class="btn btn-outline" id="darkToggle" style="padding:4px 8px;min-height:28px;">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- ====== MAIN ====== -->
+    <div class="container">
+
+        <!-- ====== PAGE: STATS ====== -->
+        <div class="page active" id="statsPage">
+            <div class="stats-grid" id="statsGrid"></div>
+            <div id="ownersStats"></div>
+        </div>
+
+        <!-- ====== PAGE: TABLE ====== -->
+        <div class="page" id="tablePage">
+            <div class="toolbar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="بحث...">
+                </div>
+                <div class="filter-group">
+                    <select id="ownerFilter"><option value="">الشبكات</option></select>
+                    <select id="typeFilter"><option value="">النوع</option></select>
+                    <select id="statusFilter">
+                        <option value="">الكل</option>
+                        <option value="used">مستخدمة</option>
+                        <option value="unused">غير مستخدمة</option>
+                    </select>
+                    <button class="btn btn-outline" id="sortBtn" style="padding:3px 8px;min-height:26px;">
+                        <i class="fas fa-sort"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="actions-bar">
+                <button class="btn btn-primary" id="importPdfBtn"><i class="fas fa-file-pdf"></i> PDF</button>
+                <button class="btn btn-success" id="addBtn"><i class="fas fa-plus"></i> إضافة</button>
+                <button class="btn btn-outline" id="typesBtn"><i class="fas fa-tags"></i> أنواع</button>
+                <button class="btn btn-outline" id="ownersBtn"><i class="fas fa-users"></i> الشبكات</button>
+                <button class="btn btn-outline" id="exportBtn"><i class="fas fa-download"></i> تصدير</button>
+            </div>
+
+            <div class="table-wrap">
+                <div class="table-scroll" id="tableScroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:60px;">الإجراءات</th>
+                                <th>رقم الكرت</th>
+                                <th>نوع الكرت</th>
+                                <th>الشبكات</th>
+                                <th style="width:50px;">نسخ</th>
+                                <th style="width:50px;">مشاركة</th>
+                                <th style="width:65px;">تاريخ الإضافة</th>
+                                <th style="width:65px;">آخر نسخ</th>
+                                <th style="width:65px;">آخر مشاركة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="footer-info">
+                <span id="countLabel">0 كرت</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== BOTTOM NAVIGATION ====== -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-page="statsPage">
+            <i class="fas fa-chart-pie"></i>
+            <span>الإحصائيات</span>
+        </button>
+        <button class="nav-item" data-page="tablePage">
+            <i class="fas fa-table"></i>
+            <span>الجدول</span>
+            <span class="badge-nav" id="tableBadge">0</span>
+        </button>
+    </nav>
+
+    <!-- ====== MODAL CONTAINER ====== -->
+    <div id="modalContainer"></div>
+    <div id="toastContainer"></div>
+
+    <script>
+        // ===================================================================
+        //  التطبيق بالكامل
+        // ===================================================================
+
+        // ==================== الأدوات المساعدة ====================
+        const Utils = {
+            id() { return Date.now() + '-' + Math.random().toString(36).slice(2, 8); },
+            now() { return new Date().toISOString(); },
+            date(d) {
+                if (!d) return '—';
+                const dt = new Date(d);
+                return dt.toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+            },
+            time(d) {
+                if (!d) return '—';
+                const dt = new Date(d);
+                return dt.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+            },
+            debounce(fn, delay = 250) {
+                let timer;
+                return function(...args) {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => fn.apply(this, args), delay);
+                };
+            },
+            generateCode() {
+                return Math.floor(1000 + Math.random() * 9000).toString();
+            },
+            parseCSV(text) {
+                const lines = text.split('\n').filter(line => line.trim());
+                if (lines.length === 0) return [];
+                const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+                const result = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const values = lines[i].split(',').map(v => v.replace(/^"|"$/g, '').trim());
+                    if (values.length === headers.length) {
+                        const obj = {};
+                        headers.forEach((h, idx) => { obj[h] = values[idx] || ''; });
+                        result.push(obj);
+                    }
+                }
+                return result;
+            },
+            shareText(text) {
+                if (window.Android && typeof Android.share === "function") {
+                    Android.share(text);
+                    return true;
+                } else if (navigator.share) {
+                    navigator.share({ title: 'كرت', text: text }).catch(() => {});
+                    return true;
+                } else {
+                    navigator.clipboard.writeText(text).then(() => {});
+                    return false;
+                }
+            },
+            downloadFile(content, filename, mimeType) {
+                try {
+                    if (window.Android && typeof Android.saveFile === 'function') {
+                        Android.saveFile(content, mimeType, filename);
+                        return true;
+                    }
+                    const blob = new Blob([content], { type: mimeType });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    return true;
+                } catch (e) {
+                    console.error('Download error:', e);
+                    return false;
+                }
+            }
+        };
+
+        // ==================== التخزين ====================
+        class Storage {
+            constructor() {
+                this.wordsKey = 'words_data';
+                this.typesKey = 'types_data';
+                this.ownersKey = 'owners_data';
+                this.words = this.load(this.wordsKey, []);
+                this.types = this.load(this.typesKey, ['100', '200', '1000', '500']);
+                this.owners = this.load(this.ownersKey, ['غير محدد']);
+            }
+
+            load(key, def) {
+                try {
+                    const data = localStorage.getItem(key);
+                    return data ? JSON.parse(data) : def;
+                } catch { return def; }
+            }
+
+            save(key, data) {
+                localStorage.setItem(key, JSON.stringify(data));
+            }
+
+            saveAll() {
+                this.save(this.wordsKey, this.words);
+                this.save(this.typesKey, this.types);
+                this.save(this.ownersKey, this.owners);
+            }
+
+            getWords() { return this.words; }
+            getTypes() { return this.types; }
+            getOwners() { return this.owners; }
+
+            isDuplicate(word, owner) {
+                return this.words.some(w => w.word === word && w.owner === owner);
+            }
+
+            findDuplicates(word) {
+                return this.words.filter(w => w.word === word);
+            }
+
+            addWord(word, type = '100', owner = 'غير محدد') {
+                if (this.isDuplicate(word, owner)) {
+                    return { added: false, reason: 'duplicate_same_owner' };
+                }
+                const newWord = {
+                    id: Utils.id(),
+                    word: word.trim(),
+                    type: type || '100',
+                    owner: owner || 'غير محدد',
+                    addedAt: Utils.now(),
+                    lastCopied: null,
+                    lastShared: null,
+                    copyCount: 0,
+                    shareCount: 0,
+                    used: false
+                };
+                this.words.unshift(newWord);
+                this.saveAll();
+                return { added: true, word: newWord };
+            }
+
+            updateWord(id, data) {
+                const idx = this.words.findIndex(w => w.id === id);
+                if (idx === -1) return false;
+                const oldWord = this.words[idx];
+                if ((data.word && data.word !== oldWord.word) || (data.owner && data.owner !== oldWord.owner)) {
+                    const newWord = data.word || oldWord.word;
+                    const newOwner = data.owner || oldWord.owner;
+                    if (this.isDuplicate(newWord, newOwner)) {
+                        return false;
+                    }
+                }
+                this.words[idx] = { ...this.words[idx], ...data };
+                this.saveAll();
+                return true;
+            }
+
+            deleteWord(id) {
+                this.words = this.words.filter(w => w.id !== id);
+                this.saveAll();
+            }
+
+            copyWord(id) {
+                const w = this.words.find(w => w.id === id);
+                if (!w) return false;
+                w.lastCopied = Utils.now();
+                w.copyCount = (w.copyCount || 0) + 1;
+                w.used = true;
+                this.saveAll();
+                return true;
+            }
+
+            shareWord(id) {
+                const w = this.words.find(w => w.id === id);
+                if (!w) return false;
+                w.lastShared = Utils.now();
+                w.shareCount = (w.shareCount || 0) + 1;
+                w.used = true;
+                this.saveAll();
+                return true;
+            }
+
+            addType(name) {
+                const t = name.trim();
+                if (!t || this.types.includes(t)) return false;
+                this.types.push(t);
+                this.saveAll();
+                return true;
+            }
+
+            deleteType(name) {
+                const used = this.words.some(w => w.type === name);
+                if (used) return false;
+                this.types = this.types.filter(t => t !== name);
+                this.saveAll();
+                return true;
+            }
+
+            renameType(oldName, newName) {
+                if (!this.types.includes(oldName)) return false;
+                const idx = this.types.indexOf(oldName);
+                this.types[idx] = newName;
+                this.words.forEach(w => { if (w.type === oldName) w.type = newName; });
+                this.saveAll();
+                return true;
+            }
+
+            addOwner(name) {
+                const t = name.trim();
+                if (!t || this.owners.includes(t)) return false;
+                this.owners.push(t);
+                this.saveAll();
+                return true;
+            }
+
+            deleteOwner(name) {
+                const used = this.words.some(w => w.owner === name);
+                if (used) return false;
+                this.owners = this.owners.filter(t => t !== name);
+                this.saveAll();
+                return true;
+            }
+
+            renameOwner(oldName, newName) {
+                if (!this.owners.includes(oldName)) return false;
+                const idx = this.owners.indexOf(oldName);
+                this.owners[idx] = newName;
+                this.words.forEach(w => { if (w.owner === oldName) w.owner = newName; });
+                this.saveAll();
+                return true;
+            }
+
+            getStats() {
+                const total = this.words.length;
+                const used = this.words.filter(w => w.used).length;
+                const wordCounts = {};
+                this.words.forEach(w => {
+                    if (!wordCounts[w.word]) wordCounts[w.word] = 0;
+                    wordCounts[w.word]++;
+                });
+                const duplicateWords = Object.keys(wordCounts).filter(w => wordCounts[w] > 1);
+                return {
+                    total,
+                    used,
+                    unused: total - used,
+                    copies: this.words.reduce((s, w) => s + (w.copyCount || 0), 0),
+                    shares: this.words.reduce((s, w) => s + (w.shareCount || 0), 0),
+                    types: this.types.length,
+                    owners: this.owners.length,
+                    uniqueWords: Object.keys(wordCounts).length,
+                    duplicateWords: duplicateWords.length
+                };
+            }
+
+            getOwnerStats() {
+                const stats = {};
+                this.owners.forEach(owner => {
+                    const words = this.words.filter(w => w.owner === owner);
+                    const total = words.length;
+                    const used = words.filter(w => w.used).length;
+                    const types = {};
+                    words.forEach(w => {
+                        if (!types[w.type]) types[w.type] = { total: 0, used: 0 };
+                        types[w.type].total++;
+                        if (w.used) types[w.type].used++;
+                    });
+                    stats[owner] = { total, used, unused: total - used, types };
+                });
+                return stats;
+            }
+
+            getFiltered(filterText = '', filterType = '', filterOwner = '', filterStatus = '', sortDesc = true) {
+                let result = [...this.words];
+                if (filterText) {
+                    const ft = filterText.toLowerCase();
+                    result = result.filter(w =>
+                        w.word.toLowerCase().includes(ft) ||
+                        (w.type && w.type.toLowerCase().includes(ft)) ||
+                        (w.owner && w.owner.toLowerCase().includes(ft))
+                    );
+                }
+                if (filterType) {
+                    result = result.filter(w => w.type === filterType);
+                }
+                if (filterOwner) {
+                    result = result.filter(w => w.owner === filterOwner);
+                }
+                if (filterStatus === 'used') {
+                    result = result.filter(w => w.used);
+                } else if (filterStatus === 'unused') {
+                    result = result.filter(w => !w.used);
+                }
+                result.sort((a, b) => {
+                    if (a.used !== b.used) return a.used ? 1 : -1;
+                    const da = new Date(a.addedAt);
+                    const db = new Date(b.addedAt);
+                    return sortDesc ? db - da : da - db;
+                });
+                return result;
+            }
+
+            exportData() {
+                return { 
+                    words: this.words, 
+                    types: this.types, 
+                    owners: this.owners, 
+                    exportedAt: Utils.now()
+                };
+            }
+
+            importData(data) {
+                if (data.words) { this.words = data.words; this.save(this.wordsKey, this.words); }
+                if (data.types) { this.types = data.types; this.save(this.typesKey, this.types); }
+                if (data.owners) { this.owners = data.owners; this.save(this.ownersKey, this.owners); }
+            }
+
+            clearCopied() {
+                const count = this.words.filter(w => w.copyCount > 0).length;
+                this.words = this.words.filter(w => w.copyCount === 0);
+                this.saveAll();
+                return count;
+            }
+
+            clearShared() {
+                const count = this.words.filter(w => w.shareCount > 0).length;
+                this.words = this.words.filter(w => w.shareCount === 0);
+                this.saveAll();
+                return count;
+            }
+
+            clearAll() {
+                const count = this.words.length;
+                this.words = [];
+                this.saveAll();
+                return count;
+            }
+        }
+
+        // ==================== معالج الملفات ====================
+        class FileProcessor {
+            constructor(storage, ui) {
+                this.storage = storage;
+                this.ui = ui;
+                this.pdfjs = window.pdfjsLib;
+                this.pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                this.minLength = 10;
+            }
+
+            showPdfModal() {
+                const container = document.getElementById('modalContainer');
+                const owners = this.storage.getOwners();
+                let ownerOpts = owners.map(o => `<option value="${o}">`).join('');
+
+                container.innerHTML = `
+                    <div class="modal-overlay" id="pdfModalOverlay">
+                        <div class="modal">
+                            <h2>
+                                <span><i class="fas fa-file-pdf"></i> استيراد PDF</span>
+                                <span class="close" id="closePdfModal">&times;</span>
+                            </h2>
+                            <div class="drop-zone" id="pdfDropZone">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>اسحب ملف PDF هنا أو انقر للاختيار</p>
+                                <input type="file" id="pdfFileInput" accept=".pdf" style="display:none;">
+                                <div id="pdfFileInfo" style="font-size:11px;color:#718096;margin-top:4px;"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>شبكة</label>
+                                    <div class="input-with-datalist">
+                                        <input type="text" id="importOwner" list="ownerList" placeholder="اكتب أو اختر شبكةً">
+                                        <datalist id="ownerList">${ownerOpts}</datalist>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>نوع الكرت</label>
+                                    <div class="input-with-datalist">
+                                        <input type="text" id="importType" list="typeList" placeholder="نوع الكرت">
+                                        <datalist id="typeList"></datalist>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>الحد الأدنى لطول الكرت</label>
+                                    <input type="number" id="minLengthInput" value="10" min="3" max="50" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e2e8f0;background:#f7fafc;font-size:13px;">
+                                    <div class="hint">سيتم استخراج الكروت التي يزيد طولها عن هذا الرقم</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" id="startPdfImportBtn" disabled style="width:100%;justify-content:center;padding:8px;">
+                                <i class="fas fa-play"></i> بدء الاستيراد
+                            </button>
+                            <div class="progress-wrap" id="pdfProgressWrap" style="display:none;">
+                                <div class="progress-bar"><div class="fill" id="pdfProgressFill"></div></div>
+                                <div class="progress-info">
+                                    <span id="pdfProgressText">0%</span>
+                                    <span id="pdfProgressDetail">الصفحة 0 / 0</span>
+                                </div>
+                                <div style="display:flex;gap:10px;font-size:11px;margin-top:4px;color:#718096;flex-wrap:wrap;">
+                                    <span>📄 <span id="pdfExtractedCount">0</span></span>
+                                    <span>➕ <span id="pdfNewCount">0</span></span>
+                                    <span>🔄 <span id="pdfDupCount">0</span></span>
+                                    <span>⚠️ <span id="pdfSameOwnerCount">0</span></span>
+                                    <span>📏 <span id="pdfFilteredCount">0</span></span>
+                                </div>
+                            </div>
+                            <div class="report" id="pdfReportDiv"></div>
+                        </div>
+                    </div>
+                `;
+
+                const typeList = document.getElementById('typeList');
+                this.storage.getTypes().forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t;
+                    typeList.appendChild(opt);
+                });
+
+                const ownerList = document.getElementById('ownerList');
+                this.storage.getOwners().forEach(o => {
+                    const opt = document.createElement('option');
+                    opt.value = o;
+                    ownerList.appendChild(opt);
+                });
+
+                document.getElementById('closePdfModal').onclick = () => container.innerHTML = '';
+                document.getElementById('pdfModalOverlay').onclick = (e) => {
+                    if (e.target === e.currentTarget) container.innerHTML = '';
+                };
+
+                this.setupPdfDropZone();
+            }
+
+            setupPdfDropZone() {
+                const dropZone = document.getElementById('pdfDropZone');
+                const fileInput = document.getElementById('pdfFileInput');
+                const fileInfo = document.getElementById('pdfFileInfo');
+                const startBtn = document.getElementById('startPdfImportBtn');
+
+                let selectedFile = null;
+
+                dropZone.onclick = () => fileInput.click();
+
+                dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+                dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+                dropZone.ondrop = (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    if (e.dataTransfer.files.length) {
+                        const file = e.dataTransfer.files[0];
+                        if (file.type === 'application/pdf') {
+                            selectedFile = file;
+                            fileInfo.textContent = `📄 ${file.name} (${(file.size/1024).toFixed(0)} KB)`;
+                            startBtn.disabled = false;
+                        } else {
+                            fileInfo.textContent = '❌ يرجى اختيار ملف PDF';
+                            startBtn.disabled = true;
+                        }
+                    }
+                };
+
+                fileInput.onchange = () => {
+                    if (fileInput.files.length) {
+                        const file = fileInput.files[0];
+                        selectedFile = file;
+                        fileInfo.textContent = `📄 ${file.name} (${(file.size/1024).toFixed(0)} KB)`;
+                        startBtn.disabled = false;
+                    }
+                };
+
+                startBtn.onclick = async () => {
+                    if (!selectedFile) return;
+                    const typeVal = document.getElementById('importType').value.trim() || '100';
+                    const ownerVal = document.getElementById('importOwner').value.trim() || 'غير محدد';
+                    const minLength = parseInt(document.getElementById('minLengthInput').value) || 10;
+
+                    if (typeVal && !this.storage.getTypes().includes(typeVal)) {
+                        this.storage.addType(typeVal);
+                        this.ui.populateTypeFilter();
+                    }
+                    if (ownerVal && !this.storage.getOwners().includes(ownerVal)) {
+                        this.storage.addOwner(ownerVal);
+                        this.ui.populateOwnerFilter();
+                    }
+                    await this.processPdf(selectedFile, typeVal, ownerVal, minLength);
+                };
+            }
+
+            async processPdf(file, defaultType, defaultOwner, minLength) {
+                const startBtn = document.getElementById('startPdfImportBtn');
+                const progressWrap = document.getElementById('pdfProgressWrap');
+                const progressFill = document.getElementById('pdfProgressFill');
+                const progressText = document.getElementById('pdfProgressText');
+                const progressDetail = document.getElementById('pdfProgressDetail');
+                const extractedSpan = document.getElementById('pdfExtractedCount');
+                const newSpan = document.getElementById('pdfNewCount');
+                const dupSpan = document.getElementById('pdfDupCount');
+                const sameOwnerSpan = document.getElementById('pdfSameOwnerCount');
+                const filteredSpan = document.getElementById('pdfFilteredCount');
+                const reportDiv = document.getElementById('pdfReportDiv');
+
+                progressWrap.style.display = 'block';
+                startBtn.disabled = true;
+                reportDiv.style.display = 'none';
+
+                let allWords = [];
+                let totalPages = 0;
+
+                try {
+                    const buffer = await file.arrayBuffer();
+                    const pdf = await this.pdfjs.getDocument({ data: buffer }).promise;
+                    totalPages = pdf.numPages;
+
+                    for (let i = 1; i <= totalPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const text = await page.getTextContent();
+                        const items = text.items.map(item => item.str.trim()).filter(s => s.length >= minLength);
+                        allWords.push(...items);
+
+                        const pct = Math.round((i / totalPages) * 100);
+                        progressFill.style.width = pct + '%';
+                        progressText.textContent = pct + '%';
+                        progressDetail.textContent = `الصفحة ${i} / ${totalPages}`;
+                        extractedSpan.textContent = allWords.length;
+
+                        await new Promise(r => setTimeout(r, 10));
+                    }
+
+                    const unique = [...new Set(allWords)];
+                    filteredSpan.textContent = unique.length;
+
+                    let added = 0, duplicated = 0, sameOwner = 0;
+
+                    for (const word of unique) {
+                        const result = this.storage.addWord(word, defaultType, defaultOwner);
+                        if (result.added) {
+                            added++;
+                        } else if (result.reason === 'duplicate_same_owner') {
+                            sameOwner++;
+                        } else {
+                            duplicated++;
+                        }
+                    }
+
+                    newSpan.textContent = added;
+                    dupSpan.textContent = duplicated;
+                    sameOwnerSpan.textContent = sameOwner;
+
+                    reportDiv.style.display = 'block';
+                    reportDiv.innerHTML = `
+                        <h4 style="margin-bottom:4px;font-size:13px;">✅ اكتمل استيراد PDF</h4>
+                        <div class="report-grid">
+                            <div>📄 المستخرجة: <strong>${allWords.length}</strong></div>
+                            <div>🔍 بعد التصفية (طول ≥ ${minLength}): <strong>${unique.length}</strong></div>
+                            <div>➕ المضافة: <strong>${added}</strong></div>
+                            <div>🔄 المكررة (شبكة مختلفة): <strong>${duplicated}</strong></div>
+                            <div>⚠️ مكررة (نفس الشبكة): <strong>${sameOwner}</strong></div>
+                            <div>🏷️ نوع الكرت: <strong>${defaultType}</strong></div>
+                            <div>👤 الشبكات: <strong>${defaultOwner}</strong></div>
+                            <div>📏 الحد الأدنى للطول: <strong>${minLength}</strong></div>
+                        </div>
+                    `;
+
+                    this.ui.renderStats();
+                    this.ui.renderTable();
+                    this.ui.populateTypeFilter();
+                    this.ui.populateOwnerFilter();
+                    this.ui.updateBadge();
+                    this.ui.toast(`✅ تم استيراد ${added} كرت جديدة من PDF`);
+
+                } catch (err) {
+                    console.error(err);
+                    reportDiv.style.display = 'block';
+                    reportDiv.innerHTML = `<div style="color:#dc2626;font-size:12px;">❌ خطأ: ${err.message}</div>`;
+                    this.ui.toast('❌ فشل استيراد PDF');
+                } finally {
+                    startBtn.disabled = false;
+                    progressFill.style.width = '100%';
+                    progressText.textContent = '100%';
+                }
+            }
+
+            showImportFileModal() {
+                const container = document.getElementById('modalContainer');
+
+                container.innerHTML = `
+                    <div class="modal-overlay" id="fileModalOverlay">
+                        <div class="modal">
+                            <h2>
+                                <span><i class="fas fa-file-import"></i> استيراد ملف</span>
+                                <span class="close" id="closeFileModal">&times;</span>
+                            </h2>
+                            <p style="font-size:13px;color:#718096;margin-bottom:10px;">استورد كروت من ملف JSON أو CSV</p>
+                            <div class="drop-zone" id="fileDropZone">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>اسحب ملف JSON أو CSV هنا أو انقر للاختيار</p>
+                                <div class="file-types">يدعم: .json, .csv</div>
+                                <input type="file" id="fileInput" accept=".json,.csv" style="display:none;">
+                                <div id="fileInfo" style="font-size:11px;color:#718096;margin-top:4px;"></div>
+                            </div>
+                            <div class="form-group" id="fileTypeGroup" style="display:none;">
+                                <label>نوع الملف</label>
+                                <select id="fileTypeSelect">
+                                    <option value="json">JSON</option>
+                                    <option value="csv">CSV</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" id="startFileImportBtn" disabled style="width:100%;justify-content:center;padding:8px;">
+                                <i class="fas fa-play"></i> بدء الاستيراد
+                            </button>
+                            <div class="progress-wrap" id="fileProgressWrap" style="display:none;">
+                                <div class="progress-bar"><div class="fill" id="fileProgressFill"></div></div>
+                                <div class="progress-info">
+                                    <span id="fileProgressText">0%</span>
+                                    <span id="fileProgressDetail">جاري المعالجة...</span>
+                                </div>
+                                <div style="display:flex;gap:10px;font-size:11px;margin-top:4px;color:#718096;flex-wrap:wrap;">
+                                    <span>📄 <span id="fileExtractedCount">0</span></span>
+                                    <span>➕ <span id="fileNewCount">0</span></span>
+                                    <span>🔄 <span id="fileDupCount">0</span></span>
+                                    <span>⚠️ <span id="fileSameOwnerCount">0</span></span>
+                                </div>
+                            </div>
+                            <div class="report" id="fileReportDiv"></div>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('closeFileModal').onclick = () => container.innerHTML = '';
+                document.getElementById('fileModalOverlay').onclick = (e) => {
+                    if (e.target === e.currentTarget) container.innerHTML = '';
+                };
+
+                this.setupFileDropZone();
+            }
+
+            setupFileDropZone() {
+                const dropZone = document.getElementById('fileDropZone');
+                const fileInput = document.getElementById('fileInput');
+                const fileInfo = document.getElementById('fileInfo');
+                const fileTypeGroup = document.getElementById('fileTypeGroup');
+                const fileTypeSelect = document.getElementById('fileTypeSelect');
+                const startBtn = document.getElementById('startFileImportBtn');
+
+                let selectedFile = null;
+
+                dropZone.onclick = () => fileInput.click();
+
+                dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+                dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+                dropZone.ondrop = (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    if (e.dataTransfer.files.length) {
+                        const file = e.dataTransfer.files[0];
+                        this.handleFileSelection(file, fileInfo, fileTypeGroup, fileTypeSelect, startBtn);
+                    }
+                };
+
+                fileInput.onchange = () => {
+                    if (fileInput.files.length) {
+                        const file = fileInput.files[0];
+                        this.handleFileSelection(file, fileInfo, fileTypeGroup, fileTypeSelect, startBtn);
+                    }
+                };
+
+                startBtn.onclick = async () => {
+                    if (!selectedFile) return;
+                    const type = fileTypeSelect.value;
+                    await this.processFile(selectedFile, type);
+                };
+            }
+
+            handleFileSelection(file, fileInfo, fileTypeGroup, fileTypeSelect, startBtn) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                let valid = false;
+
+                if (ext === 'json') {
+                    fileTypeSelect.value = 'json';
+                    valid = true;
+                } else if (ext === 'csv') {
+                    fileTypeSelect.value = 'csv';
+                    valid = true;
+                }
+
+                if (valid) {
+                    this.selectedFile = file;
+                    fileInfo.textContent = `📄 ${file.name} (${(file.size/1024).toFixed(0)} KB) - نوع: ${ext.toUpperCase()}`;
+                    fileTypeGroup.style.display = 'block';
+                    startBtn.disabled = false;
+                } else {
+                    fileInfo.textContent = '❌ يرجى اختيار ملف JSON أو CSV';
+                    fileTypeGroup.style.display = 'none';
+                    startBtn.disabled = true;
+                }
+            }
+
+            async processFile(file, type) {
+                const startBtn = document.getElementById('startFileImportBtn');
+                const progressWrap = document.getElementById('fileProgressWrap');
+                const progressFill = document.getElementById('fileProgressFill');
+                const progressText = document.getElementById('fileProgressText');
+                const progressDetail = document.getElementById('fileProgressDetail');
+                const extractedSpan = document.getElementById('fileExtractedCount');
+                const newSpan = document.getElementById('fileNewCount');
+                const dupSpan = document.getElementById('fileDupCount');
+                const sameOwnerSpan = document.getElementById('fileSameOwnerCount');
+                const reportDiv = document.getElementById('fileReportDiv');
+
+                progressWrap.style.display = 'block';
+                startBtn.disabled = true;
+                reportDiv.style.display = 'none';
+
+                try {
+                    const text = await file.text();
+                    let data = [];
+                    let added = 0, duplicated = 0, sameOwner = 0;
+
+                    if (type === 'json') {
+                        data = JSON.parse(text);
+                        if (data.words) {
+                            const words = data.words;
+                            if (data.types) {
+                                data.types.forEach(t => this.storage.addType(t));
+                            }
+                            if (data.owners) {
+                                data.owners.forEach(o => this.storage.addOwner(o));
+                            }
+                            for (const w of words) {
+                                const result = this.storage.addWord(w.word, w.type || '100', w.owner || 'غير محدد');
+                                if (result.added) added++;
+                                else if (result.reason === 'duplicate_same_owner') sameOwner++;
+                                else duplicated++;
+                            }
+                            extractedSpan.textContent = words.length;
+                        } else if (Array.isArray(data)) {
+                            for (const item of data) {
+                                const word = typeof item === 'string' ? item : (item.word || item.term || '');
+                                if (word) {
+                                    const result = this.storage.addWord(word, '100', 'غير محدد');
+                                    if (result.added) added++;
+                                    else if (result.reason === 'duplicate_same_owner') sameOwner++;
+                                    else duplicated++;
+                                }
+                            }
+                            extractedSpan.textContent = data.length;
+                        }
+                    } else if (type === 'csv') {
+                        const rows = Utils.parseCSV(text);
+                        for (const row of rows) {
+                            const word = row['رقم الكرت'] || row['كرت'] || row['word'] || '';
+                            const type = row['نوع الكرت'] || row['نوع'] || row['type'] || '100';
+                            const owner = row['الشبكات'] || row['مالك'] || row['owner'] || 'غير محدد';
+                            if (word) {
+                                if (type && !this.storage.getTypes().includes(type)) {
+                                    this.storage.addType(type);
+                                }
+                                if (owner && !this.storage.getOwners().includes(owner)) {
+                                    this.storage.addOwner(owner);
+                                }
+                                const result = this.storage.addWord(word, type, owner);
+                                if (result.added) added++;
+                                else if (result.reason === 'duplicate_same_owner') sameOwner++;
+                                else duplicated++;
+                            }
+                        }
+                        extractedSpan.textContent = rows.length;
+                    }
+
+                    newSpan.textContent = added;
+                    dupSpan.textContent = duplicated;
+                    sameOwnerSpan.textContent = sameOwner;
+
+                    reportDiv.style.display = 'block';
+                    reportDiv.innerHTML = `
+                        <h4 style="margin-bottom:4px;font-size:13px;">✅ اكتمل استيراد ${type.toUpperCase()}</h4>
+                        <div class="report-grid">
+                            <div>📄 الكروت: <strong>${extractedSpan.textContent}</strong></div>
+                            <div>➕ المضافة: <strong>${added}</strong></div>
+                            <div>🔄 المكررة (شبكة مختلفة): <strong>${duplicated}</strong></div>
+                            <div>⚠️ مكررة (نفس الشبكة): <strong>${sameOwner}</strong></div>
+                        </div>
+                    `;
+
+                    progressFill.style.width = '100%';
+                    progressText.textContent = '100%';
+                    progressDetail.textContent = 'اكتمل!';
+
+                    this.ui.renderStats();
+                    this.ui.renderTable();
+                    this.ui.populateTypeFilter();
+                    this.ui.populateOwnerFilter();
+                    this.ui.updateBadge();
+                    this.ui.toast(`✅ تم استيراد الملف بنجاح`);
+
+                } catch (err) {
+                    console.error(err);
+                    reportDiv.style.display = 'block';
+                    reportDiv.innerHTML = `<div style="color:#dc2626;font-size:12px;">❌ خطأ: ${err.message}</div>`;
+                    this.ui.toast('❌ فشل استيراد الملف');
+                } finally {
+                    startBtn.disabled = false;
+                }
+            }
+        }
+
+        // ==================== واجهة المستخدم ====================
+        class UI {
+            constructor(storage) {
+                this.storage = storage;
+                this.filterText = '';
+                this.filterType = '';
+                this.filterOwner = '';
+                this.filterStatus = '';
+                this.sortDesc = true;
+                this.currentPage = 'statsPage';
+            }
+
+            renderStats() {
+                const stats = this.storage.getStats();
+                const grid = document.getElementById('statsGrid');
+                grid.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">الإجمالي</span>
+                            <span class="stat-icon"><i class="fas fa-database"></i></span>
+                        </div>
+                        <div class="stat-number">${stats.total}</div>
+                        <div class="stat-detail">
+                            <span>🔄 كروت فريدة: ${stats.uniqueWords}</span>
+                            <span>📌 مكررة: ${stats.duplicateWords}</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">مستخدمة</span>
+                            <span class="stat-icon" style="color:#ef4444;"><i class="fas fa-circle"></i></span>
+                        </div>
+                        <div class="stat-number">${stats.used}</div>
+                        <div class="stat-detail">
+                            <span><span class="used-dot">●</span> مستخدمة</span>
+                            <span><span class="unused-dot">●</span> متبقي ${stats.unused}</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">النسخ</span>
+                            <span class="stat-icon" style="color:#2563eb;"><i class="fas fa-copy"></i></span>
+                        </div>
+                        <div class="stat-number">${stats.copies}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">المشاركات</span>
+                            <span class="stat-icon" style="color:#16a34a;"><i class="fas fa-share-alt"></i></span>
+                        </div>
+                        <div class="stat-number">${stats.shares}</div>
+                    </div>
+                `;
+                this.renderOwnerStats();
+            }
+
+            renderOwnerStats() {
+                const container = document.getElementById('ownersStats');
+                const ownerStats = this.storage.getOwnerStats();
+                const owners = this.storage.getOwners();
+
+                let html = '';
+                owners.forEach(owner => {
+                    const data = ownerStats[owner] || { total: 0, used: 0, unused: 0, types: {} };
+                    const typeEntries = Object.entries(data.types);
+
+                    html += `
+                        <div class="owner-section open">
+                            <div class="owner-header" data-owner="${owner}">
+                                <div class="owner-name">
+                                    <i class="fas fa-users" style="color:#8b5cf6;"></i>
+                                    ${owner}
+                                    <span style="font-size:12px;color:#64748b;font-weight:400;">(${data.total} كرت)</span>
+                                </div>
+                                <div class="owner-stats">
+                                    <span class="used">مستخدم: ${data.used}</span>
+                                    <span class="unused">متبقي: ${data.unused}</span>
+                                    <span style="color:#64748b;">${Object.keys(data.types).length} نوع</span>
+                                </div>
+                            </div>
+                            <div class="type-list">
+                                ${typeEntries.length > 0 ? typeEntries.map(([type, stats]) => `
+                                    <div class="type-item">
+                                        <span class="type-name"><i class="fas fa-tag" style="color:#f59e0b;font-size:10px;"></i> ${type}</span>
+                                        <div class="type-stats">
+                                            <span class="used">مستخدم: ${stats.used}</span>
+                                            <span class="unused">متبقي: ${stats.total - stats.used}</span>
+                                            <span style="color:#64748b;font-size:10px;">الإجمالي: ${stats.total}</span>
+                                        </div>
+                                    </div>
+                                `).join('') : `
+                                    <div style="padding:8px 12px;color:#64748b;font-size:12px;">لا توجد أنواع لهذه الشبكة</div>
+                                `}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html || '<div style="padding:16px;text-align:center;color:#64748b;">لا توجد شبكات</div>';
+
+                container.querySelectorAll('.owner-header').forEach(header => {
+                    header.addEventListener('click', function() {
+                        const section = this.parentElement;
+                        section.classList.toggle('open');
+                    });
+                });
+            }
+
+            populateTypeFilter() {
+                const select = document.getElementById('typeFilter');
+                const current = select.value;
+                const types = this.storage.getTypes();
+                select.innerHTML = `<option value="">نوع الكرت</option>`;
+                types.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t;
+                    opt.textContent = t;
+                    select.appendChild(opt);
+                });
+                if (current) select.value = current;
+            }
+
+            populateOwnerFilter() {
+                const select = document.getElementById('ownerFilter');
+                const current = select.value;
+                const owners = this.storage.getOwners();
+                select.innerHTML = `<option value="">الشبكات</option>`;
+                owners.forEach(o => {
+                    const opt = document.createElement('option');
+                    opt.value = o;
+                    opt.textContent = o;
+                    select.appendChild(opt);
+                });
+                if (current) select.value = current;
+            }
+
+            renderTable() {
+                const tbody = document.getElementById('tableBody');
+                const words = this.storage.getFiltered(
+                    this.filterText,
+                    this.filterType,
+                    this.filterOwner,
+                    this.filterStatus,
+                    this.sortDesc
+                );
+
+                if (words.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:#a0aec0;font-size:12px;">لا توجد كروت</td></tr>`;
+                    document.getElementById('countLabel').textContent = '0 كرت';
+                    this.updateBadge();
+                    return;
+                }
+
+                const duplicates = {};
+                this.storage.getWords().forEach(w => {
+                    if (!duplicates[w.word]) duplicates[w.word] = [];
+                    duplicates[w.word].push(w.owner);
+                });
+
+                let html = '';
+                for (const w of words) {
+                    const cls = w.used ? 'used' : '';
+                    const isDuplicate = duplicates[w.word] && duplicates[w.word].length > 1;
+                    
+                    html += `
+                        <tr class="${cls}">
+                            <td class="actions">
+                                <i class="fas fa-copy" data-action="copy" data-id="${w.id}" title="نسخ"></i>
+                                <i class="fas fa-share-alt" data-action="share" data-id="${w.id}" title="مشاركة"></i>
+                    
+                            </td>
+                            <td>
+                                <strong style="font-size:16px;">${w.word}</strong>
+                                ${isDuplicate ? '<span class="badge-duplicate">مكرر</span>' : ''}
+                            </td>
+                            <td><span class="badge">${w.type || '100'}</span></td>
+                            <td><span class="badge-owner">${w.owner || 'غير محدد'}</span></td>
+                            <td style="text-align:center;">${w.copyCount || 0}</td>
+                            <td style="text-align:center;">${w.shareCount || 0}</td>
+                            <td style="font-size:16px;">${Utils.date(w.addedAt)}</td>
+                            <td style="font-size:16px;">${w.lastCopied ? Utils.date(w.lastCopied) : '—'}</td>
+                            <td style="font-size:16px;">${w.lastShared ? Utils.date(w.lastShared) : '—'}</td>
+                        </tr>
+                    `;
+                }
+                tbody.innerHTML = html;
+                document.getElementById('countLabel').textContent = `${words.length} كرت`;
+                this.updateBadge();
+
+                tbody.querySelectorAll('[data-action]').forEach(el => {
+                    el.onclick = (e) => {
+                        e.stopPropagation();
+                        const action = el.dataset.action;
+                        const id = el.dataset.id;
+                        this.handleAction(action, id);
+                    };
+                });
+            }
+
+            updateBadge() {
+                const badge = document.getElementById('tableBadge');
+                const count = this.storage.getWords().length;
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'flex' : 'none';
+            }
+
+            handleAction(action, id) {
+                const word = this.storage.getWords().find(w => w.id === id);
+                if (!word) return;
+
+                switch (action) {
+                    case 'copy': {
+                        const text = `${word.word} | نوع الكرت: ${word.type || '100'} | الشبكات: ${word.owner || 'غير محدد'}`;
+                        navigator.clipboard.writeText(text).then(() => {
+                            this.storage.copyWord(id);
+                            this.renderStats();
+                            this.renderTable();
+                            this.toast(`📋 تم نسخ "${word.word}" مع التفاصيل`);
+                        }).catch(() => {
+                            const ta = document.createElement('textarea');
+                            ta.value = text;
+                            document.body.appendChild(ta);
+                            ta.select();
+                            document.execCommand('copy');
+                            ta.remove();
+                            this.storage.copyWord(id);
+                            this.renderStats();
+                            this.renderTable();
+                            this.toast(`📋 تم نسخ "${word.word}" مع التفاصيل`);
+                        });
+                        break;
+                    }
+                    case 'share': {
+                        const text = `${word.word} | نوع الكرت: ${word.type || '100'} | الشبكات: ${word.owner || 'غير محدد'}`;
+                        const shared = Utils.shareText(text);
+                        this.storage.shareWord(id);
+                        this.renderStats();
+                        this.renderTable();
+                        this.toast(shared ? `📤 تم مشاركة "${word.word}"` : `📋 تم نسخ "${word.word}" للمشاركة`);
+                        break;
+                    }
+                    case 'edit':
+                        this.showEditModal(id);
+                        break;
+                    case 'delete':
+                        if (confirm(`حذف "${word.word}"؟`)) {
+                            this.storage.deleteWord(id);
+                            this.renderStats();
+                            this.renderTable();
+                            this.updateBadge();
+                            this.toast(`🗑️ تم حذف "${word.word}"`);
+                        }
+                        break;
+                }
+            }
+
+            // ====== حول التطبيق ======
+            showAboutModal() {
+                const container = document.getElementById('modalContainer');
+                
+                let appVersion = 'alpha 1.0.0';
+                let appName = 'مدير الكروت';
+                let buildDate = '2026 July 16';
+                
+                if (window.Android && typeof Android.getAppVersion === 'function') {
+                    appVersion = Android.getAppVersion();
+                }
+                if (window.Android && typeof Android.getAppName === 'function') {
+                    appName = Android.getAppName();
+                }
+                
+                container.innerHTML = `
+                    <div class="modal-overlay" id="aboutOverlay">
+                        <div class="modal" style="max-width:450px;">
+                            <h2>
+                                <span><i class="fas fa-info-circle" style="color:#2563eb;"></i> حول التطبيق</span>
+                                <span class="close" id="closeAbout">&times;</span>
+                            </h2>
+                            
+                            <div class="about-header">
+                                <div class="about-icon">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <h3 style="font-size:22px;margin:4px 0;">${appName}</h3>
+                                <span class="about-version">الإصدار ${appVersion}</span>
+                                <p style="color:#64748b;font-size:13px;margin-top:6px;">إدارة الكروت بكل سهولة</p>
+                            </div>
+                            
+                            <div style="background:#f7fafc;border-radius:10px;padding:12px;margin:10px 0;">
+                                <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">📅 تاريخ الإصدار</span>
+                                    <span style="font-weight:600;">${buildDate}</span>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e2e8f0;">
+                                    <span style="color:#64748b;">👨‍💻 المطور</span>
+                                    <span style="font-weight:600;">Jackals Work</span>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;padding:4px 0;">
+                                    <span style="color:#64748b;">📱 المنصة</span>
+                                    <span style="font-weight:600;">${window.Android ? 'Android and ' : ''} Web</span>
+                                </div>
+                            </div>
+                            
+                            <div class="about-features">
+                                <h4><i class="fas fa-star" style="color:#f59e0b;"></i> المميزات</h4>
+                                <ul>
+                                    <li>إدارة كروت متعددة</li>
+                                    <li>دعم الشبكات والأنواع</li>
+                                    <li>استيراد من PDF و JSON و CSV</li>
+                                    <li>تصدير إلى JSON و CSV</li>
+                                    <li>نسخ ومشاركة الكروت</li>
+                                    <li>إحصائيات تفصيلية</li>
+                                    <li>دعم الوضع الليلي</li>
+                                    <li>متوافق مع Android</li>
+                                </ul>
+                            </div>
+           
+
+                               <div class="about-header">
+                                <div class="about-icon">
+                                   <img src="Jackals-logo.png" alt="Photo" width="180" height="80">
+                                </div>
+                              
+                                 <span class="about-version">jackals.work</span>
+                             
+                            </div>
+                            <div class="about-buttons">
+                                <button class="btn btn-outline" id="shareAppBtn">
+                                    <i class="fas fa-share-alt"></i> مشاركة
+                                </button>
+                                <button class="btn btn-outline" id="rateAppBtn">
+                                    <i class="fas fa-star"></i> تقييم
+                                </button>
+                                <button class="btn btn-outline" id="closeAboutBtn">
+                                    <i class="fas fa-times"></i> إغلاق
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('closeAbout').onclick = () => container.innerHTML = '';
+                document.getElementById('closeAboutBtn').onclick = () => container.innerHTML = '';
+                document.getElementById('aboutOverlay').onclick = (e) => {
+                    if (e.target === e.currentTarget) container.innerHTML = '';
+                };
+
+                document.getElementById('shareAppBtn').onclick = () => {
+                    const shareText = `📚 تطبيق ${appName}\nالإصدار: ${appVersion}\n\nتطبيق ممتاز لإدارة الكروت بكل سهولة! \n https://github.com/Jackals-work/ingrash`;
+                    Utils.shareText(shareText);
+                    container.innerHTML = '';
+                };
+
+                document.getElementById('rateAppBtn').onclick = () => {
+                    if (window.Android) {
+                        try {
+                            const packageName = Android.getPackageName ? Android.getPackageName() : 'work.jackals.ingrash';
+                            const url = `https://github.com/Jackals-work/ingrash`;
+                            if (Android.openUrl) {
+                                Android.openUrl(url);
+                            } else {
+                                window.open(url, '_blank');
+                            }
+                        } catch (e) {
+                            this.toast('⚠️ لا يمكن فتح متجر التطبيقات');
+                        }
+                    } else {
+                        this.toast('⚠️ هذه الميزة متوفرة فقط في تطبيق Android');
+                    }
+                    container.innerHTML = '';
+                };
+            }
+
+            // ====== دوال التصدير ======
+            exportJSON() {
+                try {
+                    const data = this.storage.exportData();
+                    const json = JSON.stringify(data, null, 2);
+                    const success = Utils.downloadFile(json, `words_${Date.now()}.json`, 'application/json');
+                    this.toast(success ? '✅ تم تصدير JSON بنجاح' : '❌ فشل تصدير JSON');
+                } catch (e) {
+                    console.error('Export JSON error:', e);
+                    this.toast('❌ خطأ في تصدير JSON: ' + e.message);
+                }
+            }
+
+            exportCSV() {
+                try {
+                    const words = this.storage.getWords();
+                    let csv = 'رقم الكرت,نوع الكرت,الشبكات,تاريخ الإضافة,آخر نسخ,آخر مشاركة,نسخ,مشاركة\n';
+                    words.forEach(w => {
+                        csv += `"${w.word}","${w.type || '100'}","${w.owner || 'غير محدد'}","${w.addedAt || ''}","${w.lastCopied || ''}","${w.lastShared || ''}",${w.copyCount || 0},${w.shareCount || 0}\n`;
+                    });
+                    const csvWithBOM = '\uFEFF' + csv;
+                    const success = Utils.downloadFile(csvWithBOM, `words_${Date.now()}.csv`, 'text/csv;charset=utf-8');
+                    this.toast(success ? '✅ تم تصدير CSV بنجاح' : '❌ فشل تصدير CSV');
+                } catch (e) {
+                    console.error('Export CSV error:', e);
+                    this.toast('❌ خطأ في تصدير CSV: ' + e.message);
+                }
+            }
+
+            // ====== دوال المودال ======
+            showConfirmModal(title, message, onConfirm) {
+                const code = Utils.generateCode();
+                const container = document.getElementById('modalContainer');
+
+                container.innerHTML = `
+                    <div class="modal-overlay" id="confirmOverlay">
+                        <div class="modal">
+                            <h2>
+                                <span><i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> ${title}</span>
+                                <span class="close" id="closeConfirm">&times;</span>
+                            </h2>
+                            <p style="margin-bottom:12px;font-size:14px;">${message}</p>
+                            <div style="background:#fef3c7;padding:12px;border-radius:10px;margin-bottom:14px;text-align:center;border:2px dashed #f59e0b;">
+                                <p style="font-size:13px;color:#92400e;">أدخل الرقم التالي لتأكيد المسح:</p>
+                                <p style="font-size:32px;font-weight:900;color:#d97706;letter-spacing:6px;margin:6px 0;">${code}</p>
+                            </div>
+                            <div class="form-group">
+                                <label>رقم التأكيد</label>
+                                <input type="text" id="confirmCode" placeholder="أدخل الرقم المكون من 4 أرقام" maxlength="4" inputmode="numeric" style="text-align:center;font-size:20px;letter-spacing:4px;">
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn btn-danger" id="confirmYesBtn" style="flex:1;justify-content:center;padding:8px;">
+                                    <i class="fas fa-check"></i> تأكيد المسح
+                                </button>
+                                <button class="btn btn-outline" id="confirmNoBtn" style="flex:1;justify-content:center;padding:8px;">
+                                    إلغاء
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                const closeModal = () => container.innerHTML = '';
+                document.getElementById('closeConfirm').onclick = closeModal;
+                document.getElementById('confirmNoBtn').onclick = closeModal;
+                document.getElementById('confirmOverlay').onclick = (e) => {
+                    if (e.target === e.currentTarget) closeModal();
+                };
+
+                document.getElementById('confirmYesBtn').onclick = () => {
+                    const input = document.getElementById('confirmCode').value.trim();
+                    if (input === code) {
+                        closeModal();
+                        onConfirm();
+                    } else {
+                        this.toast('❌ الرقم غير صحيح!');
+                        document.getElementById('confirmCode').value = '';
+                        document.getElementById('confirmCode').focus();
+                    }
+                };
+
+                document.getElementById('confirmCode').addEventListener('input', (e) => {
+                    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                });
+
+                document.getElementById('confirmCode').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        document.getElementById('confirmYesBtn').click();
+                    }
+                });
+
+                setTimeout(() => document.getElementById('confirmCode').focus(), 300);
+            }
+
+            clearCopied() {
+                const count = this.storage.getWords().filter(w => w.copyCount > 0).length;
+                if (count === 0) {
+                    this.toast('⚠️ لا توجد كروت منسوخة للمسح');
+                    return;
+                }
+                this.showConfirmModal(
+                    'مسح كروت المنسوخة',
+                    `سيتم حذف <strong>${count}</strong> كرت تم نسخه سابقاً. هذا الإجراء لا يمكن التراجع عنه.`,
+                    () => {
+                        const deleted = this.storage.clearCopied();
+                        this.renderStats();
+                        this.renderTable();
+                        this.updateBadge();
+                        this.toast(`🗑️ تم مسح ${deleted} كرت منسوخ`);
+                    }
+                );
+            }
+
+            clearShared() {
+                const count = this.storage.getWords().filter(w => w.shareCount > 0).length;
+                if (count === 0) {
+                    this.toast('⚠️ لا توجد كروت مشاركة للمسح');
+                    return;
+                }
+                this.showConfirmModal(
+                    'مسح الكروت المشاركة',
+                    `سيتم حذف <strong>${count}</strong> كرت تم مشاركته سابقاً. هذا الإجراء لا يمكن التراجع عنه.`,
+                    () => {
+                        const deleted = this.storage.clearShared();
+                        this.renderStats();
+                        this.renderTable();
+                        this.updateBadge();
+                        this.toast(`🗑️ تم مسح ${deleted} كرت مشاركة`);
+                    }
+                );
+            }
+
+            clearAll() {
+                const count = this.storage.getWords().length;
+                if (count === 0) {
+                    this.toast('⚠️ لا توجد كروت للمسح');
+                    return;
+                }
+                this.showConfirmModal(
+                    'مسح جميع الكروت',
+                    `سيتم حذف جميع كروت (<strong>${count}</strong> كرت) نهائياً. هذا الإجراء لا يمكن التراجع عنه.`,
+                    () => {
+                        const deleted = this.storage.clearAll();
+                        this.renderStats();
+                        this.renderTable();
+                        this.populateTypeFilter();
+                        this.populateOwnerFilter();
+                        this.updateBadge();
+                        this.toast(`🗑️ تم مسح ${deleted} كرت بالكامل`);
+                    }
+                );
+            }
+
+            showEditModal(id) {
+                const word = this.storage.getWords().find(w => w.id === id);
+                if (!word) return;
+                const container = document.getElementById('modalContainer');
+                const types = this.storage.getTypes();
+                const owners = this.storage.getOwners();
+
+                let typeOpts = types.map(t =>
+                    `<option value="${t}" ${t===word.type?'selected':''}>${t}</option>`
+                ).join('');
+
+                let ownerOpts = owners.map(o =>
+                    `<option value="${o}" ${o===word.owner?'selected':''}>${o}</option>`
+                ).join('');
+
+                container.innerHTML = `
+                    <div class="modal-overlay" id="editOverlay">
+                        <div class="modal">
+                            <h2><span><i class="fas fa-edit"></i> تعديل</span><span class="close" id="closeEdit">&times;</span></h2>
+                            <div class="form-group">
+                                <label>رقم الكرت</label>
+                                <input type="text" id="editWord" value="${word.word}">
+                            </div>
+                            <div class="form-group">
+                                <label>نوع الكرت</label>
+                                <select id="editType">${typeOpts}</select>
+                            </div>
+                            <div class="form-group">
+                                <label>الشبكات</label>
+                                <select id="editOwner">${ownerOpts}</select>
+                            </div>
+                            <div class="form-group">
+                                <div class="hint">⚠️ لا يمكن تكرار نفس الرقم في نفس الشبكة</div>
+                            </div>
+                            <button class="btn btn-success" id="saveEdit" style="width:100%;justify-content:center;padding:8px;"><i class="fas fa-save"></i> حفظ</button>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('closeEdit').onclick = () => container.innerHTML = '';
+                document.getElementById('editOverlay').onclick = (e) => {
+                    if (e.target === e.currentTarget) container.innerHTML = '';
+                };
+
+                document.getElementById('saveEdit').onclick = () => {
+                    const newWord = document.getElementById('editWord').value.trim();
+                    const newType = document.getElementById('editType').value;
+                    const newOwner = document.getElementById('editOwner').value;
+                    if (!newWord) { this.toast('❌ أدخل كرت'); return; }
+                    
+                    const result = this.storage.updateWord(id, { word: newWord, type: newType, owner: newOwner });
+                    if (result) {
+                        this.renderStats();
+                        this.renderTable();
+                        this.populateTypeFilter();
+                        this.populateOwnerFilter();
+                        this.toast(`✅ تم تحديث "${newWord}"`);
+                        container.innerHTML = '';
+                    } else {
+                        this.toast(`⚠️ رقم "${newWord}" موجود بالفعل في شبكة "${newOwner}"`);
+                    }
+                };
+            }
+
+            showAddModal() {
+                const container = document.getElementById('modalContainer');
+                const types = this.storage.getTypes();
+                const owners = this.storage.getOwners();
+
+                let typeOpts = types.map(t => `<option value="${t}">${t}</option>`).join('');
+                let ownerOpts = owners.map(o => `<option value="${o}">${o}</option>`).join('');
+
+                container.innerHTML = `
+                    <div class="modal-overlay" id="addOverlay">
+                        <div class="modal">
+                            <h2><span><i class="fas fa-plus"></i> إضافة كرت</span><span class="close" id="closeAdd">&times;</span></h2>
+                            <div class="form-group">
+                                <label>رقم الكرت</label>
+                                <input type="text" id="addWord" placeholder="أدخل رقم الكرت">
+                            </div>
+                            <div class="form-group">
+                                <label>نوع الكرت</label>
+                                <select id="addType">${typeOpts}</select>
+                            </div>
+                            <div class="form-group">
+                                <label>الشبكات</label>
+                                <select id="addOwner">${ownerOpts}</select>
+                            </div>
+                            <div class="form-group">
+                                <div class="hint">💡 يمكن إضافة نفس الرقم لشبكات مختلفة</div>
+                                <div class="hint">⚠️ لا يمكن تكرار نفس الرقم في نفس الشبكة</div>
+                            </div>
+                            <button class="btn btn-success" id="saveAdd" style="width:100%;justify-content:center;padding:8px;"><i class="fas fa-save"></i> حفظ</button>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('closeAdd').onclick = () => container.innerHTML = '';
+                document.getElementById('addOverlay').onclick = (e) => {
+                    if (e.target === e.currentTarget) container.innerHTML = '';
+                };
+
+                document.getElementById('saveAdd').onclick = () => {
+                    const word = document.getElementById('addWord').value.trim();
+                    const type = document.getElementById('addType').value;
+                    const owner = document.getElementById('addOwner').value;
+                    if (!word) { this.toast('❌ أدخل كرت'); return; }
+                    
+                    const result = this.storage.addWord(word, type, owner);
+                    if (result.added) {
+                        this.renderStats();
+                        this.renderTable();
+                        this.populateTypeFilter();
+                        this.populateOwnerFilter();
+                        this.updateBadge();
+                        this.toast(`✅ تمت إضافة "${word}"`);
+                        container.innerHTML = '';
+                    } else if (result.reason === 'duplicate_same_owner') {
+                        this.toast(`⚠️ رقم "${word}" موجود بالفعل في شبكة "${owner}"`);
+                    } else {
+                        this.toast(`⚠️ حدث خطأ أثناء الإضافة`);
+                    }
+                };
+            }
+
+            showTypesModal() {
+                const container = document.getElementById('modalContainer');
+                const types = this.storage.getTypes();
+                let items = types.map(t => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#f7fafc;border-radius:8px;margin-bottom:4px;">
+                        <span style="font-size:12px;">${t}</span>
+                        <div style="display:flex;gap:4px;">
+                            <i class="fas fa-edit" style="cursor:pointer;padding:3px 5px;color:#f59e0b;font-size:12px;" data-action="rename-type" data-type="${t}"></i>
+                            <i class="fas fa-trash" style="cursor:pointer;padding:3px 5px;color:#dc2626;font-size:12px;" data-action="delete-type" data-type="${t}"></i>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="modal-overlay" id="typesOverlay">
+                        <div class="modal">
+                            <h2><span><i class="fas fa-tags"></i> إدارة الأنواع</span><span class="close" id="closeTypes">&times;</span></h2>
+                            <div style="display:flex;gap:6px;margin-bottom:10px;">
+                                <input type="text" id="newTypeInput" placeholder="نوع جديد" style="flex:1;padding:6px 10px;border-radius:8px;border:1px solid #e2e8f0;background:#f7fafc;font-size:12px;">
+                                <button class="btn btn-primary" id="addTypeBtn" style="padding:4px 10px;min-height:28px;"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <div id="typesList">${items}</div>
+                            <button class="btn btn-outline" id="closeTypesBtn" style="width:100%;margin-top:10px;padding:6px;font-size:12px;">إغلاق</button>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('closeTypes').onclick = () => container.innerHTML = '';
+                document.getElementById('closeTypesBtn').onclick = () => container.innerHTML = '';
+                document.getElementById('typesOverlay').onclick = (e) => {
+                    if (e.target === e.currentTarget) container.innerHTML = '';
+                };
+
+                document.getElementById('addTypeBtn').onclick = () => {
+                    const val = document.getElementById('newTypeInput').value.trim();
+                    if (!val) { this.toast('❌ أدخل اسم نوع الكرت'); return; }
+                    if (this.storage.addType(val)) {
+                        this.populateTypeFilter();
+                        this.renderStats();
+                        this.toast(`✅ تم إضافة "${val}"`);
+                        this.showTypesModal();
+                    } else {
+                        this.toast(`⚠️ "${val}" موجود`);
+                    }
+                };
+
+                container.querySelectorAll('[data-action="delete-type"]').forEach(el => {
+                    el.onclick = () => {
+                        const t = el.dataset.type;
+                        if (this.storage.deleteType(t)) {
+                            this.populateTypeFilter();
+                            this.renderStats();
+                            this.toast(`🗑️ تم حذف "${t}"`);
+                            this.showTypesModal();
+                        } else {
+                            this.toast(`⚠️ لا يمكن حذف نوع كرت مستخدم`);
+                        }
+                    };
+                });
+
+                container.querySelectorAll('[data-action="rename-type"]').forEach(el => {
+                    el.onclick = () => {
+                        const old = el.dataset.type;
+                        const newName = prompt(`تعديل "${old}"`, old);
+                        if (newName && newName.trim() && newName.trim() !== old) {
+                            if (this.storage.renameType(old, newName.trim())) {
+                                this.populateTypeFilter();
+                                this.renderStats();
+                                this.renderTable();
+                                this.toast(`✅ تم التعديل إلى "${newName}"`);
+                                this.showTypesModal();
+                            }
+                        }
+                    };
+                });
+            }
+
+            showOwnersModal() {
+                const container = document.getElementById('modalContainer');
+                const owners = this.storage.getOwners();
+                let items = owners.map(o => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#f7fafc;border-radius:8px;margin-bottom:4px;">
+                        <span style="font-size:12px;">${o}</span>
+                        <div style="display:flex;gap:4px;">
+                            <i class="fas fa-edit" style="cursor:pointer;padding:3px 5px;color:#f59e0b;font-size:12px;" data-action="rename-owner" data-owner="${o}"></i>
+                            <i class="fas fa-trash" style="cursor:pointer;padding:3px 5px;color:#dc2626;font-size:12px;" data-action="delete-owner" data-owner="${o}"></i>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="modal-overlay" id="ownersOverlay">
+                        <div class="modal">
+                            <h2><span><i class="fas fa-users"></i> إدارة الشبكات</span><span class="close" id="closeOwners">&times;</span></h2>
+                            <div style="display:flex;gap:6px;margin-bottom:10px;">
+                                <input type="text" id="newOwnerInput" placeholder="شبكة جديدة" style="flex:1;padding:6px 10px;border-radius:8px;border:1px solid #e2e8f0;background:#f7fafc;font-size:12px;">
+                                <button class="btn btn-primary" id="addOwnerBtn" style="padding:4px 10px;min-height:28px;"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <div id="ownersList">${items}</div>
+                            <button class="btn btn-outline" id="closeOwnersBtn" style="width:100%;margin-top:10px;padding:6px;font-size:12px;">إغلاق</button>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('closeOwners').onclick = () => container.innerHTML = '';
+                document.getElementById('closeOwnersBtn').onclick = () => container.innerHTML = '';
+                document.getElementById('ownersOverlay').onclick = (e) => {
+                    if (e.target === e.currentTarget) container.innerHTML = '';
+                };
+
+                document.getElementById('addOwnerBtn').onclick = () => {
+                    const val = document.getElementById('newOwnerInput').value.trim();
+                    if (!val) { this.toast('❌ أدخل اسم الشبكات'); return; }
+                    if (this.storage.addOwner(val)) {
+                        this.populateOwnerFilter();
+                        this.renderStats();
+                        this.toast(`✅ تم إضافة "${val}"`);
+                        this.showOwnersModal();
+                    } else {
+                        this.toast(`⚠️ "${val}" موجود`);
+                    }
+                };
+
+                container.querySelectorAll('[data-action="delete-owner"]').forEach(el => {
+                    el.onclick = () => {
+                        const o = el.dataset.owner;
+                        if (this.storage.deleteOwner(o)) {
+                            this.populateOwnerFilter();
+                            this.renderStats();
+                            this.toast(`🗑️ تم حذف "${o}"`);
+                            this.showOwnersModal();
+                        } else {
+                            this.toast(`⚠️ لا يمكن حذف شبكة مستخدمة`);
+                        }
+                    };
+                });
+
+                container.querySelectorAll('[data-action="rename-owner"]').forEach(el => {
+                    el.onclick = () => {
+                        const old = el.dataset.owner;
+                        const newName = prompt(`تعديل "${old}"`, old);
+                        if (newName && newName.trim() && newName.trim() !== old) {
+                            if (this.storage.renameOwner(old, newName.trim())) {
+                                this.populateOwnerFilter();
+                                this.renderStats();
+                                this.renderTable();
+                                this.toast(`✅ تم التعديل إلى "${newName}"`);
+                                this.showOwnersModal();
+                            }
+                        }
+                    };
+                });
+            }
+
+            showExportModal() {
+                const container = document.getElementById('modalContainer');
+                
+                container.innerHTML = `
+                    <div class="modal-overlay" id="exportOverlay">
+                        <div class="modal">
+                            <h2>
+                                <span><i class="fas fa-download"></i> تصدير واستيراد</span>
+                                <span class="close" id="closeExport">&times;</span>
+                            </h2>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+                                <button class="btn btn-primary" id="exportJsonBtn" style="flex:1;justify-content:center;padding:8px;font-size:12px;">
+                                    <i class="fas fa-file-code"></i> تصدير JSON
+                                </button>
+                                <button class="btn btn-success" id="exportCsvBtn" style="flex:1;justify-content:center;padding:8px;font-size:12px;">
+                                    <i class="fas fa-file-csv"></i> تصدير CSV
+                                </button>
+                            </div>
+                            <div style="border-top:1px solid #e2e8f0;margin:10px 0;"></div>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                <button class="btn btn-outline" id="importFileBtn2" style="flex:1;justify-content:center;padding:8px;font-size:12px;">
+                                    <i class="fas fa-file-import"></i> استيراد ملف
+                                </button>
+                            </div>
+                            <button class="btn btn-outline" id="closeExportBtn" style="width:100%;margin-top:10px;padding:8px;font-size:12px;">
+                                إغلاق
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('closeExport').onclick = () => container.innerHTML = '';
+                document.getElementById('closeExportBtn').onclick = () => container.innerHTML = '';
+                document.getElementById('exportOverlay').onclick = (e) => {
+                    if (e.target === e.currentTarget) container.innerHTML = '';
+                };
+                
+                document.getElementById('exportJsonBtn').onclick = () => {
+                    container.innerHTML = '';
+                    this.exportJSON();
+                };
+                
+                document.getElementById('exportCsvBtn').onclick = () => {
+                    container.innerHTML = '';
+                    this.exportCSV();
+                };
+                
+                document.getElementById('importFileBtn2').onclick = () => {
+                    container.innerHTML = '';
+                    fileProcessor.showImportFileModal();
+                };
+            }
+
+            toast(msg) {
+                const container = document.getElementById('toastContainer');
+                const el = document.createElement('div');
+                el.className = 'toast';
+                el.textContent = msg;
+                container.appendChild(el);
+                setTimeout(() => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateX(-50%) translateY(20px)';
+                    setTimeout(() => el.remove(), 300);
+                }, 3000);
+            }
+
+            switchPage(pageId) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+                this.currentPage = pageId;
+
+                if (pageId === 'statsPage') {
+                    this.renderStats();
+                } else if (pageId === 'tablePage') {
+                    this.renderTable();
+                }
+            }
+        }
+
+        // ==================== INIT ====================
+        const storage = new Storage();
+        const ui = new UI(storage);
+        const fileProcessor = new FileProcessor(storage, ui);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            ui.renderStats();
+            ui.renderTable();
+            ui.populateTypeFilter();
+            ui.populateOwnerFilter();
+            ui.updateBadge();
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const page = this.dataset.page;
+                    ui.switchPage(page);
+                });
+            });
+
+            const dropdown = document.getElementById('moreDropdown');
+            const moreBtn = document.getElementById('moreBtn');
+
+            moreBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', () => {
+                dropdown.classList.remove('show');
+            });
+
+            document.getElementById('aboutBtn').addEventListener('click', () => {
+                dropdown.classList.remove('show');
+                ui.showAboutModal();
+            });
+
+            document.getElementById('importFileBtn').addEventListener('click', () => {
+                dropdown.classList.remove('show');
+                fileProcessor.showImportFileModal();
+            });
+
+            document.getElementById('clearCopiedBtn').addEventListener('click', () => {
+                dropdown.classList.remove('show');
+                ui.clearCopied();
+            });
+
+            document.getElementById('clearSharedBtn').addEventListener('click', () => {
+                dropdown.classList.remove('show');
+                ui.clearShared();
+            });
+
+            document.getElementById('clearAllBtn').addEventListener('click', () => {
+                dropdown.classList.remove('show');
+                ui.clearAll();
+            });
+
+            document.getElementById('searchInput').addEventListener('input', Utils.debounce((e) => {
+                ui.filterText = e.target.value.trim();
+                ui.renderTable();
+            }, 250));
+
+            document.getElementById('ownerFilter').addEventListener('change', (e) => {
+                ui.filterOwner = e.target.value;
+                ui.renderTable();
+            });
+            document.getElementById('typeFilter').addEventListener('change', (e) => {
+                ui.filterType = e.target.value;
+                ui.renderTable();
+            });
+            document.getElementById('statusFilter').addEventListener('change', (e) => {
+                ui.filterStatus = e.target.value;
+                ui.renderTable();
+            });
+            document.getElementById('sortBtn').addEventListener('click', () => {
+                ui.sortDesc = !ui.sortDesc;
+                ui.renderTable();
+            });
+
+            document.getElementById('importPdfBtn').addEventListener('click', () => fileProcessor.showPdfModal());
+            document.getElementById('addBtn').addEventListener('click', () => ui.showAddModal());
+            document.getElementById('typesBtn').addEventListener('click', () => ui.showTypesModal());
+            document.getElementById('ownersBtn').addEventListener('click', () => ui.showOwnersModal());
+            document.getElementById('exportBtn').addEventListener('click', () => ui.showExportModal());
+
+            document.getElementById('darkToggle').addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                const icon = document.getElementById('darkToggle').querySelector('i');
+                icon.classList.toggle('fa-moon');
+                icon.classList.toggle('fa-sun');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal-overlay')) {
+                    document.getElementById('modalContainer').innerHTML = '';
+                }
+            });
+        });
+
+        // ====== دعم Android ======
+        if (typeof Android !== 'undefined') {
+            window.shareText = function(text) {
+                if (Android && Android.share) {
+                    Android.share(text);
+                    return true;
+                }
+                return false;
+            };
+            
+            window.showToast = function(message) {
+                if (Android && Android.toast) {
+                    Android.toast(message);
+                    return true;
+                }
+                return false;
+            };
+            
+            window.exitApp = function() {
+                if (Android && Android.exitApp) {
+                    Android.exitApp();
+                    return true;
+                }
+                return false;
+            };
+            
+            window.getAppVersion = function() {
+                if (Android && Android.getAppVersion) {
+                    return Android.getAppVersion();
+                }
+                return '1.0';
+            };
+            
+            window.openUrl = function(url) {
+                if (Android && Android.openUrl) {
+                    Android.openUrl(url);
+                    return true;
+                }
+                window.open(url, '_blank');
+                return false;
+            };
+        }
+
+        console.log('✅ تطبيق مدير الكروت جاهز');
+    </script>
+</body>
+</html>
