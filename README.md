@@ -1,15 +1,11 @@
 # 📚 ingrash wifi Card Manager Application
 
-<p align="center">
+<div align="center">
+  <p align="center">
   <a href="https://github.com/Jackals-work/ingrash/releases">
     <img src="https://raw.githubusercontent.com/Jackals-work/ingrash/master/app/src/main/assets/ingrash.svg" width="180">
   </a>
 </p>
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Web%20%7C%20Android-brightgreen.svg)](https://github.com/Jackals-work/ingrash)
-
-<div align="center">
-  <img src="Jackals-logo.png" alt="Card Manager" width="200">
   <br>
   <h3>A Comprehensive Web Application for Efficient Card Management</h3>
   <p>Supports PDF, JSON, CSV Import with Advanced Statistics and Dark Mode</p>
@@ -85,6 +81,7 @@
 | **WebView** | Android support |
 
 ---
+![Ingrash Screenshot](https://raw.githubusercontent.com/Jackals-work/ingrash/master/app/src/main/assets/ingrash.png)
 
 ## 📥 Installation & Setup
 
