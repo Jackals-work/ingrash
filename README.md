@@ -1,6 +1,10 @@
 # 📚 ingrash wifi Card Manager Application
 
-[![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)](https://github.com/Jackals-work/ingrash/releases)
+<p align="center">
+  <a href="https://github.com/Jackals-work/ingrash/releases">
+    <img src="https://raw.githubusercontent.com/Jackals-work/ingrash/master/app/src/main/assets/ingrash.svg" width="180">
+  </a>
+</p>
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Web%20%7C%20Android-brightgreen.svg)](https://github.com/Jackals-work/ingrash)
 
