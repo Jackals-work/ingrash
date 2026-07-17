@@ -1,4 +1,4 @@
-# 📚 Card Manager - Smart Card Management Application
+# 📚 ingrash wifi Card Manager Application
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/Jackals-work/ingrash/blob/master/app/src/main/assets/ingrash.svg)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
